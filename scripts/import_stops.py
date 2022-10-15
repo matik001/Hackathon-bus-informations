@@ -11,7 +11,7 @@ conn = psycopg2.connect(
 cursor = conn.cursor()
 
 cursor.execute(
-    "CREATE TABLE IF NOT EXISTS stops (stop_id integer, stop_code varchar(50), stop_name varchar(255), stop_lat varchar(255), stop_lon varchar(255), buses TEXT);"
+    "CREATE TABLE IF NOT EXISTS stops (stop_id integer, stop_code varchar(50), stop_name varchar(255), stop_name_lower varchar(255), stop_lat varchar(255), stop_lon varchar(255), buses TEXT);"
 )
 
 
@@ -35,7 +35,7 @@ for bus in buses:
     accordions: list[BeautifulSoup] = document.find_all("div", attrs={"class": "accordionContent"})
 
     for acc in accordions:
-        stop = acc.find("a", attrs={"class": "label"}).text.strip().lower()
+        stop = acc.find("a", attrs={"class": "label"}).getText().strip().lower().removesuffix("\n\nnż\nprzystanek na życzenie")
 
         if stop not in stops:
             stops[stop] = set()
@@ -56,7 +56,7 @@ with open("../static_data/stops.csv", "r") as file:
 
         buses = ";".join(stops[stop_name])
 
-        query = f"INSERT INTO stops VALUES({row[0]}, '{row[1]}', '{row[2]}', '{row[3]}', '{row[4]}','{buses}');"
+        query = f"INSERT INTO stops VALUES({row[0]}, '{row[1]}', '{row[2]}', '{stop_name.lower()}', '{row[3]}', '{row[4]}','{buses}');"
         cursor.execute(query)
 
 conn.commit()
