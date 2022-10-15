@@ -18,7 +18,6 @@ import Maps from '../components/Maps.vue';
 
 <template>
     <div>
-        <h1>Home</h1>
         <Maps />
     </div>
 </template>
