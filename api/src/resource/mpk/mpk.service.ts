@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StopEntity } from './entities/stop.entity';
 import { MpkInterface } from './interfaces/mpk.interface';
+import { VehicleType } from './types/vehicle-info.type';
 
 @Injectable()
 export class MpkService implements MpkInterface {
@@ -10,6 +11,12 @@ export class MpkService implements MpkInterface {
     @InjectRepository(StopEntity)
     private readonly stopRepository: Repository<StopEntity>,
   ) {}
+
+  async getStopInfo(stop_name: string): Promise<StopEntity> {
+    return await this.stopRepository.findOneBy({
+      stop_name_lower: stop_name,
+    });
+  }
 
   async getBusesForStop(stop_name: string): Promise<Array<string>> {
     const stops = await this.stopRepository.findBy({
@@ -23,7 +30,9 @@ export class MpkService implements MpkInterface {
     return buses.split(';');
   }
 
-  async getBusesLocationForStop(stop_name: string): Promise<Array<string>> {
+  async getBusesLocationForStop(
+    stop_name: string,
+  ): Promise<Array<VehicleType>> {
     const communicationTransports = await this.getBusesForStop(stop_name);
     const mpk_url = 'https://mpk.wroc.pl/bus_position';
     const buses = [];
