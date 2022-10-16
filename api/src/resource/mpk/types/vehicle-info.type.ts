@@ -6,4 +6,5 @@ export type VehicleType = {
   y: number;
   x: number;
   k: number;
+  estimatedTime: string;
 };
