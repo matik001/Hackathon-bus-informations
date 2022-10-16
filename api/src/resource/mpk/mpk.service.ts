@@ -12,6 +12,19 @@ export class MpkService implements MpkInterface {
     private readonly stopRepository: Repository<StopEntity>,
   ) {}
 
+  async getStops(): Promise<Array<string>> {
+    return (
+      await this.stopRepository
+        .createQueryBuilder('stops')
+        .select('DISTINCT stops.stop_name_lower')
+        .orderBy('stop_name_lower')
+        .getRawMany()
+    ).reduce((acc: Array<string>, stp) => {
+      acc.push(stp.stop_name_lower);
+      return acc;
+    }, []);
+  }
+
   async getStopInfo(stop_name: string): Promise<StopEntity> {
     return await this.stopRepository.findOneBy({
       stop_name_lower: stop_name,
