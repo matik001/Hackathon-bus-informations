@@ -83,7 +83,10 @@ export class MpkService implements MpkInterface {
       })
       .join('&');
 
-    const payload = mpk_url + '?' + buses_string + '&' + trams_string;
+    let payload = mpk_url + '?' + buses_string + '&' + trams_string;
+    if (payload.endsWith('&')) {
+      payload = payload.substring(0, payload.length - 1);
+    }
     const response = await fetch(mpk_url, {
       method: 'POST',
       headers: {
@@ -99,40 +102,44 @@ export class MpkService implements MpkInterface {
       body: payload,
     });
     const stopInfo = await this.getStopInfo(stop_name);
-    const vehiclesLocation: Array<VehicleType> = await response.json();
-    const veh = vehiclesLocation.map((vehicleLoc) => {
-      return {
-        from: { lat: vehicleLoc.x, lng: vehicleLoc.y },
-        to: { lat: +stopInfo.stop_lat, lng: +stopInfo.stop_lon },
-        type: vehicleLoc.type.toString(),
-      };
-    });
-
-    const result: Array<VehicleType> = [];
-
-    const arr = veh;
-    let i = 0;
-    while (arr.length > 0) {
-      const estimatedTimes = await this.getEstimatedTimes(
-        api_key,
-        arr.slice(0, 10),
-      );
-
-      estimatedTimes.forEach((value) => {
-        result.push({
-          name: vehiclesLocation[i].name,
-          type: vehiclesLocation[i].type,
-          k: vehiclesLocation[i].k,
-          x: vehiclesLocation[i].x,
-          y: vehiclesLocation[i].y,
-          estimatedTime: value.text ?? '',
-        });
-        i++;
+    try {
+      const vehiclesLocation: Array<VehicleType> = await response.json();
+      const veh = vehiclesLocation.map((vehicleLoc) => {
+        return {
+          from: { lat: vehicleLoc.x, lng: vehicleLoc.y },
+          to: { lat: +stopInfo.stop_lat, lng: +stopInfo.stop_lon },
+          type: vehicleLoc.type.toString(),
+        };
       });
-      arr.splice(0, 10);
-    }
 
-    return result;
+      const result: Array<VehicleType> = [];
+
+      const arr = veh;
+      let i = 0;
+      while (arr.length > 0) {
+        const estimatedTimes = await this.getEstimatedTimes(
+          api_key,
+          arr.slice(0, 10),
+        );
+
+        estimatedTimes.forEach((value) => {
+          result.push({
+            name: vehiclesLocation[i].name,
+            type: vehiclesLocation[i].type,
+            k: vehiclesLocation[i].k,
+            x: vehiclesLocation[i].x,
+            y: vehiclesLocation[i].y,
+            estimatedTime: value.text ?? '',
+          });
+          i++;
+        });
+        arr.splice(0, 10);
+      }
+
+      return result;
+    } catch (e) {
+      return [];
+    }
   }
   async getEstimatedTimes(
     api_key: string,
