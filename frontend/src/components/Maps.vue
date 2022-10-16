@@ -1,5 +1,6 @@
 <script lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router';
 import { getBusesInfo, Position } from '../api/api';
 interface Marker{
   position: Position;
@@ -10,7 +11,7 @@ export default {
   setup() {
     const myMapRef = ref<any>(null);
     let zoom = ref<number>(15);
-    let stop_name = ref<String>("krzyki");
+    let stop_name = ref<String>("");
     // let center = ref<Position>({ lat: 34.04924594193164, lng: -118.24104309082031 });
     let center = ref<Position>({ lat: 51.116359, lng: 17.025282 });
     const options = ref({
@@ -85,6 +86,10 @@ export default {
 
     async function fetchData() {
       const api_url = "http://127.0.0.1:3000";
+
+
+      const route = useRoute();
+      stop_name.value = route.params.name as string;
 
       const res = await fetch(`${api_url}/mpk/location/${stop_name.value}`);
 

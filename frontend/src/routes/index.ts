@@ -1,10 +1,16 @@
 import {createRouter, createWebHistory, RouteRecordRaw} from 'vue-router';
 import Home from '../views/Home.vue';
+import SelectPage from '../views/SelectPage.vue';
 
 const routes:RouteRecordRaw[] = [
     {
         path: '/',
-        name: 'Home',
+        name: 'SelectPage',
+        component: SelectPage
+    },
+    {
+        path: '/:name',
+        name: 'Map',
         component: Home
     }
 ];
