@@ -22,7 +22,7 @@ export default {
         async function fetchData() {
             const api_url = "http://127.0.0.1:3000";
 
-            const res = await fetch(`${api_url}/stops`);
+            const res = await fetch(`${api_url}/mpk/stops`);
             const json:string[] = await res.json();
             // const json = ['stanki', 'starodworska', 'królewiecka', 'mrozów - świetlica'];
             allBusStops.value = json;
@@ -52,7 +52,7 @@ export default {
 
 </template>
   
-<style>
+<style scoped>
 .elem{
   cursor: pointer;
 }
@@ -104,13 +104,13 @@ button:focus-visible {
 .card {
   padding: 2em;
 }
-
+/* 
 #app {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-}
+} */
 
 
 </style>

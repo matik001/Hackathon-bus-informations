@@ -6,6 +6,7 @@ interface Marker{
   position: Position;
   type: String;
   label: String;
+  estimated_time?: String;
 }
 export default {
   setup() {
@@ -15,10 +16,14 @@ export default {
     // let center = ref<Position>({ lat: 34.04924594193164, lng: -118.24104309082031 });
     let center = ref<Position>({ lat: 51.116359, lng: 17.025282 });
 
+    const route = useRoute();
+    stop_name.value = route.params.name as string;
+
     let home_marker = ref<Marker>({ 
       position: center.value,
       type: "stop",
       label: stop_name.value,
+      estimated_time: undefined,
     });
     
     const options = ref({
@@ -64,10 +69,6 @@ export default {
     async function fetchData() {
       const api_url = "http://127.0.0.1:3000";
 
-
-      const route = useRoute();
-      stop_name.value = route.params.name as string;
-
       const res = await fetch(`${api_url}/mpk/location/${stop_name.value}`);
 
       const json = await res.json();
@@ -92,6 +93,7 @@ export default {
           },
           type: vehicle.type,
           label: vehicle.name,
+          estimated_time: vehicle.estimatedTime,
         }
         new_markers.push(new_marker);
       }
@@ -99,15 +101,11 @@ export default {
       markers.value = new_markers;
     }
 
-    function get_marker_opacity(marker: Marker) {
+    function to_minify(marker: Marker) {
       const stop = home_marker.value;
-
-      if(marker == stop) return 1;
-
       const dist = Math.sqrt(Math.pow(marker.position.lat - stop.position.lat, 2) + Math.pow(marker.position.lng - stop.position.lng, 2));
 
-      if(dist < 0.01) return 0;
-      return 1;
+      return marker != stop && dist < 0.001;
     }
 
     onMounted(async () => {
@@ -124,11 +122,12 @@ export default {
     })
     return {
       myMapRef,
-      zoom: zoom,
-      center: center,
-      markers: markers,
-      options: options,
-      get_marker_opacity: get_marker_opacity,
+      zoom,
+      home_marker,
+      center,
+      markers,
+      options,
+      to_minify,
     };
 
   }
@@ -144,18 +143,17 @@ export default {
       v-for="(m, index) in markers"
       :position="m.position"
       :icon="{
-        url: '/public/images/' + m.type + '.png',
-        scaledSize: {width: 70, height: 70},
-        labelOrigin: {x: 35, y: 77}
+        url: '/public/images/' + (to_minify(m) ? 'dot' : m.type) + '.png',
+        scaledSize: to_minify(m) ? {width: 20, height: 20} : {width: 40, height: 40},
+        labelOrigin: {x: 20, y: 50}
       }"
-      :label="{
-        text: m.label,
+      :label="!to_minify(m) ? {
+        text: m.label + (m.estimated_time ? ' (' + m.estimated_time + ')' : ''),
         className: 'bus-marker-label',
         color: 'red',
-        fontSize: '22px',
+        fontSize: '20px',
         fontWeight: 'bold',
-      }"
-      :collisionBehavior="''"
+      } : ''"
     />
   </GMapMap>
 </template>
