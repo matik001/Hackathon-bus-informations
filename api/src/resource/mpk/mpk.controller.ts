@@ -8,6 +8,12 @@ import { StopDto } from './dto/stop.dto';
 export class MpkController {
   constructor(private readonly mpkService: MpkService) {}
 
+  @Get('/stops')
+  @ApiOperation({ description: '' })
+  async getStops() {
+    return await this.mpkService.getStops();
+  }
+
   @Get('/:stop_name')
   @ApiOperation({ description: '' })
   async getBusesForStop(
