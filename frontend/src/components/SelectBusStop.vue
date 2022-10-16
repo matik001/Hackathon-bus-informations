@@ -46,9 +46,11 @@ export default {
   
   
 <template>
-        <h1 style="display-2 mb-4">Wybierz stację</h1>
-        <input type="text" style="width: 250px" class="mt-2 mb-2" v-model="search" />
-        <div  class="elem"  v-for="name in busStops" :key="name" v-on:click="clickedBusHandler(name)">{{name}}</div>
+  <div class="selectBusStop">
+    <h1 style="display-2 mb-4">Wybierz stację</h1>
+    <input type="text" style="width: 250px" class="mt-2 mb-2" v-model="search" />
+    <div  class="elem"  v-for="name in busStops" :key="name" v-on:click="clickedBusHandler(name)">{{name}}</div>
+  </div>
 
 </template>
   
@@ -104,13 +106,13 @@ button:focus-visible {
 .card {
   padding: 2em;
 }
-/* 
-#app {
+
+#selectBusStop {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-} */
+} 
 
 
 </style>
