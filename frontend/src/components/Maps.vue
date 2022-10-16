@@ -11,16 +11,18 @@ export default {
     const myMapRef = ref<any>(null);
     let zoom = ref<number>(15);
     let stop_name = ref<String>("krzyki");
-    // let center = ref<Position>({ lat: 34.04924594193164, lng: -118.24104309082031 });
+    
     let center = ref<Position>({ lat: 51.116359, lng: 17.025282 });
+
+    let home_marker = ref<Marker>({ 
+      position: center.value,
+      type: "stop",
+      label: stop_name.value,
+    });
+    
     const options = ref({
       disableDefaultUI: true,
       styles: [
-          // {
-          //   featureType: 'poi',
-          //   stylers: [{ visibility: 'off' }],
-          // },
-
           {
             featureType: 'poi.attraction',
             stylers: [{visibility: 'off'}]
@@ -53,35 +55,10 @@ export default {
             featureType: 'poi.sports_complex',
             stylers: [{visibility: 'off'}]
           },
-
-          // {
-          //   featureType: 'transit',
-          //   elementType: 'labels.icon',
-          //   stylers: [{ visibility: 'off' }],
-          // }
         ],
     });
 
-    let markers = ref<Marker[]>([
-        // {
-        //   position: {
-        //     lat: 51.116359, 
-        //     lng: 17.025282,
-        //   },
-        // },
-        // {
-        //   position: {
-        //     lat: 51.116359, 
-        //     lng: 17.025282,
-        //   },
-        // },
-        // {
-        //   position: {
-        //     lat: 51.116359, 
-        //     lng: 17.025282,
-        //   },
-        // },
-    ]);
+    let markers = ref<Marker[]>([]);
 
     async function fetchData() {
       const api_url = "http://127.0.0.1:3000";
@@ -90,8 +67,18 @@ export default {
 
       const json = await res.json();
       
+      center.value = {
+        lng: json.stop.x,
+        lat: json.stop.y,
+      }
+
+      home_marker.value = { 
+      position: center.value,
+      type: "stop",
+      label: stop_name.value,
+      };
       
-      markers.value = [];
+      const new_markers: Marker[] = [home_marker.value];
       for(const vehicle of json.vehiclePositions) {
         const new_marker: Marker = {
           position: {
@@ -101,13 +88,10 @@ export default {
           type: vehicle.type,
           label: vehicle.name,
         }
-        markers.value.push(new_marker);
+        new_markers.push(new_marker);
       }
 
-      center.value = {
-        lng: json.stop.x,
-        lat: json.stop.y,
-      }
+      markers.value = new_markers;
     }
 
     onMounted(async () => {
@@ -144,13 +128,16 @@ export default {
       :position="m.position"
       :icon="{
         url: '/public/images/' + m.type + '.png',
-        scaledSize: {width: 50, height: 50},
-        labelOrigin: {x: 25, y: 60}
+        scaledSize: {width: 70, height: 70},
+        labelOrigin: {x: 35, y: 77}
       }"
       :label="{
         text: m.label,
+        className: 'bus-marker-label',
+        color: 'red',
+        fontSize: '22px',
+        fontWeight: 'bold',
       }"
-      title="twój tata"
     />
   </GMapMap>
 </template>
@@ -160,10 +147,9 @@ body {
   margin: 0;
 }
 
-bus-marker-label {
-  color: red;
-  font-size: 30px;
-  font-weight: bold;
-  outline: 2px solid black;
+.bus-marker-label {
+  text-transform: capitalize;
+	-webkit-text-stroke: 1px gray;
+	-webkit-text-fill-color: black;
 }
 </style>
