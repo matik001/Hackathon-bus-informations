@@ -126,7 +126,7 @@ export class MpkService implements MpkInterface {
           k: vehiclesLocation[i].k,
           x: vehiclesLocation[i].x,
           y: vehiclesLocation[i].y,
-          estimatedTime: value.text,
+          estimatedTime: value.text ?? '',
         });
         i++;
       });
