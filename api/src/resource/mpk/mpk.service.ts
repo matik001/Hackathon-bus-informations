@@ -12,7 +12,7 @@ import {
   UnitSystem,
 } from '@googlemaps/google-maps-services-js';
 
-const api_key = 'AIzaSyBgPQzlSO2ikmel5Mb2fEoUFBBpEIU_5VQ';
+const api_key = '';
 
 @Injectable()
 export class MpkService implements MpkInterface {
