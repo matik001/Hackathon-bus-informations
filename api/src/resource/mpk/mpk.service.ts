@@ -11,8 +11,6 @@ import {
   TravelMode,
   UnitSystem,
 } from '@googlemaps/google-maps-services-js';
-import { last } from 'rxjs';
-import { validateHeaderValue } from 'http';
 
 const api_key = 'AIzaSyBgPQzlSO2ikmel5Mb2fEoUFBBpEIU_5VQ';
 
@@ -28,6 +26,7 @@ export class MpkService implements MpkInterface {
       await this.stopRepository
         .createQueryBuilder('stops')
         .select('DISTINCT stops.stop_name_lower')
+        .where("coalesce(stops.buses, '') <> ''")
         .orderBy('stop_name_lower')
         .getRawMany()
     ).reduce((acc: Array<string>, stp) => {
@@ -113,10 +112,10 @@ export class MpkService implements MpkInterface {
 
     const arr = veh;
     let i = 0;
-    while (arr.slice(0, 10).length > 0) {
+    while (arr.length > 0) {
       const estimatedTimes = await this.getEstimatedTimes(
         api_key,
-        veh.slice(0, 10),
+        arr.slice(0, 10),
       );
 
       estimatedTimes.forEach((value) => {
@@ -141,7 +140,8 @@ export class MpkService implements MpkInterface {
   ) {
     const origins = veh.map((a) => a.from);
     const destinations = veh.map((a) => a.to);
-
+    console.log(origins);
+    console.log(destinations);
     const client = new Client({});
 
     //todo: change transit_mode for trams
