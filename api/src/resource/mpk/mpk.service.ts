@@ -4,6 +4,17 @@ import { Repository } from 'typeorm';
 import { StopEntity } from './entities/stop.entity';
 import { MpkInterface } from './interfaces/mpk.interface';
 import { VehicleType } from './types/vehicle-info.type';
+import {
+  Client,
+  LatLng,
+  TransitMode,
+  TravelMode,
+  UnitSystem,
+} from '@googlemaps/google-maps-services-js';
+import { last } from 'rxjs';
+import { validateHeaderValue } from 'http';
+
+const api_key = 'AIzaSyBgPQzlSO2ikmel5Mb2fEoUFBBpEIU_5VQ';
 
 @Injectable()
 export class MpkService implements MpkInterface {
@@ -88,7 +99,60 @@ export class MpkService implements MpkInterface {
       credentials: 'include',
       body: payload,
     });
+    const stopInfo = await this.getStopInfo(stop_name);
+    const vehiclesLocation: Array<VehicleType> = await response.json();
+    const veh = vehiclesLocation.map((vehicleLoc) => {
+      return {
+        from: { lat: vehicleLoc.x, lng: vehicleLoc.y },
+        to: { lat: +stopInfo.stop_lat, lng: +stopInfo.stop_lon },
+        type: vehicleLoc.type.toString(),
+      };
+    });
 
-    return await response.json();
+    const result: Array<VehicleType> = [];
+
+    const arr = veh;
+    while (arr.slice(0, 10).length > 0) {
+      const estimatedTimes = await this.getEstimatedTimes(
+        api_key,
+        veh.slice(0, 10),
+      );
+
+      estimatedTimes.forEach((value, i) => {
+        result.push({
+          name: vehiclesLocation[i].name,
+          type: vehiclesLocation[i].type,
+          k: vehiclesLocation[i].k,
+          x: vehiclesLocation[i].x,
+          y: vehiclesLocation[i].y,
+          estimatedTime: value.text,
+        });
+      });
+      arr.splice(0, 10);
+    }
+
+    return result;
+  }
+  async getEstimatedTimes(
+    api_key: string,
+    veh: Array<{ from: LatLng; to: LatLng; type: string }>,
+  ) {
+    const origins = veh.map((a) => a.from);
+    const destinations = veh.map((a) => a.to);
+
+    const client = new Client({});
+
+    //todo: change transit_mode for trams
+    const data = await client.distancematrix({
+      params: {
+        key: api_key,
+        origins: origins,
+        destinations: destinations,
+        mode: TravelMode.driving,
+        transit_mode: [TransitMode.bus],
+        units: UnitSystem.metric,
+      },
+    });
+    return data.data.rows[0].elements.map((a) => a.duration);
   }
 }
