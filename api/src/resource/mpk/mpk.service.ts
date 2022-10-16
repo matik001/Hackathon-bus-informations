@@ -112,13 +112,14 @@ export class MpkService implements MpkInterface {
     const result: Array<VehicleType> = [];
 
     const arr = veh;
+    let i = 0;
     while (arr.slice(0, 10).length > 0) {
       const estimatedTimes = await this.getEstimatedTimes(
         api_key,
         veh.slice(0, 10),
       );
 
-      estimatedTimes.forEach((value, i) => {
+      estimatedTimes.forEach((value) => {
         result.push({
           name: vehiclesLocation[i].name,
           type: vehiclesLocation[i].type,
@@ -127,6 +128,7 @@ export class MpkService implements MpkInterface {
           y: vehiclesLocation[i].y,
           estimatedTime: value.text,
         });
+        i++;
       });
       arr.splice(0, 10);
     }
