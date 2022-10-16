@@ -73,9 +73,9 @@ export default {
       }
 
       home_marker.value = { 
-      position: center.value,
-      type: "stop",
-      label: stop_name.value,
+        position: center.value,
+        type: "stop",
+        label: stop_name.value,
       };
       
       const new_markers: Marker[] = [home_marker.value];
@@ -92,6 +92,17 @@ export default {
       }
 
       markers.value = new_markers;
+    }
+
+    function get_marker_opacity(marker: Marker) {
+      const stop = home_marker.value;
+
+      if(marker == stop) return 1;
+
+      const dist = Math.sqrt(Math.pow(marker.position.lat - stop.position.lat, 2) + Math.pow(marker.position.lng - stop.position.lng, 2));
+
+      if(dist < 0.01) return 0;
+      return 1;
     }
 
     onMounted(async () => {
@@ -112,6 +123,7 @@ export default {
       center: center,
       markers: markers,
       options: options,
+      get_marker_opacity: get_marker_opacity,
     };
 
   }
@@ -138,6 +150,7 @@ export default {
         fontSize: '22px',
         fontWeight: 'bold',
       }"
+      :collisionBehavior="''"
     />
   </GMapMap>
 </template>
